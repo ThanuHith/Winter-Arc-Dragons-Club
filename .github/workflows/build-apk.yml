@@ -1,9 +1,11 @@
 name: Build and Publish Android APK
 
 on:
+  release:
+    types: [published]
   push:
     tags:
-      - 'v*' # Triggers automatically whenever you create a tag starting with 'v' (e.g. v1.0.0)
+      - 'v*'
 
 jobs:
   build:
@@ -22,11 +24,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Make Gradlew Executable
+        run: chmod +x gradlew
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
       - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/debug/app-debug.apk
         env:
