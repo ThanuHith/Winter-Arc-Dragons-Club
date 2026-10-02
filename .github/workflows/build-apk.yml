@@ -3,6 +3,7 @@ name: Build and Publish Android APK
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -29,11 +30,17 @@ jobs:
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build Debug APK
-        run: gradle assembleDebug -Djava.awt.headless=true
+        run: ./gradlew assembleDebug -Djava.awt.headless=true
+
+      - name: Find and Rename APK
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/ -name "*.apk" | head -n 1)
+          echo "Found APK at: $APK_PATH"
+          cp "$APK_PATH" Winter-Arc.apk
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/debug/app-debug.apk#Winter-Arc.apk
+          files: Winter-Arc.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
