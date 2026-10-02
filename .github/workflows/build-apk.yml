@@ -37,6 +37,6 @@ jobs:
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/debug/app-debug.apk
+          files: app/build/outputs/apk/debug/app-debug.apk#Winter-Arc.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
