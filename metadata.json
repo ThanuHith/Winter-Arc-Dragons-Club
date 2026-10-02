@@ -1,0 +1,6 @@
+{
+  "name": "Winter Arc",
+  "description": "Dragons Club Winter Arc tracker - daily routines, Top 5 priorities, reviews, 90-day strategy, and offline backup.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
