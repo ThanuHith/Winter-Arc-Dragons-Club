@@ -3,12 +3,14 @@ package com.example.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import android.content.Context
 import com.example.data.local.ArcStrategyEntity
 import com.example.data.local.DailyReflectionEntity
 import com.example.data.local.TaskEntity
 import com.example.data.local.TimeSlot
 import com.example.data.local.WeeklyReviewEntity
 import com.example.data.repository.WinterArcRepository
+import com.example.notification.TaskReminderScheduler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -84,13 +86,19 @@ class WinterArcViewModel(
 
             repository.getTasksForDate(dateKey).combine(repository.getAllTasks()) { dateTasks, _ ->
                 val taskComparator = Comparator<TaskEntity> { a, b ->
-                    val aHasTime = a.scheduledTime.isNotBlank()
-                    val bHasTime = b.scheduledTime.isNotBlank()
-                    when {
-                        aHasTime && bHasTime -> a.scheduledTime.compareTo(b.scheduledTime)
-                        aHasTime && !bHasTime -> -1
-                        !aHasTime && bHasTime -> 1
-                        else -> a.createdAt.compareTo(b.createdAt)
+                    val aMillis = a.scheduledTimeMillis ?: Long.MAX_VALUE
+                    val bMillis = b.scheduledTimeMillis ?: Long.MAX_VALUE
+                    if (aMillis != bMillis) {
+                        aMillis.compareTo(bMillis)
+                    } else {
+                        val aHasTime = a.scheduledTime.isNotBlank()
+                        val bHasTime = b.scheduledTime.isNotBlank()
+                        when {
+                            aHasTime && bHasTime -> a.scheduledTime.compareTo(b.scheduledTime)
+                            aHasTime && !bHasTime -> -1
+                            !aHasTime && bHasTime -> 1
+                            else -> a.createdAt.compareTo(b.createdAt)
+                        }
                     }
                 }
 
@@ -276,7 +284,9 @@ class WinterArcViewModel(
         slot: TimeSlot,
         isTop5: Boolean,
         top5Index: Int = -1,
-        scheduledTime: String = ""
+        scheduledTime: String = "",
+        scheduledTimeMillis: Long? = null,
+        context: Context? = null
     ) {
         viewModelScope.launch {
             val dateKey = _selectedDate.value.toString()
@@ -287,23 +297,52 @@ class WinterArcViewModel(
                 isCompleted = false,
                 isTop5 = isTop5,
                 top5Index = if (isTop5) top5Index else -1,
-                scheduledTime = scheduledTime.trim()
+                scheduledTime = scheduledTime.trim(),
+                scheduledTimeMillis = scheduledTimeMillis
             )
-            repository.insertTask(newTask)
+            val generatedId = repository.insertTask(newTask)
+            if (context != null && scheduledTimeMillis != null) {
+                TaskReminderScheduler.scheduleReminder(context, newTask.copy(id = generatedId))
+            }
             refreshBackupJson()
         }
     }
 
-    fun toggleTask(task: TaskEntity) {
+    fun updateTask(task: TaskEntity, context: Context? = null) {
         viewModelScope.launch {
-            repository.updateTask(task.copy(isCompleted = !task.isCompleted))
+            repository.updateTask(task)
+            if (context != null) {
+                if (task.scheduledTimeMillis != null && !task.isCompleted) {
+                    TaskReminderScheduler.scheduleReminder(context, task)
+                } else {
+                    TaskReminderScheduler.cancelReminder(context, task.id)
+                }
+            }
             refreshBackupJson()
         }
     }
 
-    fun deleteTask(task: TaskEntity) {
+    fun toggleTask(task: TaskEntity, context: Context? = null) {
+        viewModelScope.launch {
+            val updated = task.copy(isCompleted = !task.isCompleted)
+            repository.updateTask(updated)
+            if (context != null) {
+                if (updated.isCompleted) {
+                    TaskReminderScheduler.cancelReminder(context, task.id)
+                } else if (updated.scheduledTimeMillis != null) {
+                    TaskReminderScheduler.scheduleReminder(context, updated)
+                }
+            }
+            refreshBackupJson()
+        }
+    }
+
+    fun deleteTask(task: TaskEntity, context: Context? = null) {
         viewModelScope.launch {
             repository.deleteTask(task)
+            if (context != null) {
+                TaskReminderScheduler.cancelReminder(context, task.id)
+            }
             refreshBackupJson()
         }
     }

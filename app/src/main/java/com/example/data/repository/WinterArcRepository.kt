@@ -17,6 +17,14 @@ class WinterArcRepository(private val dao: WinterArcDao) {
 
     fun getAllTasks(): Flow<List<TaskEntity>> = dao.getAllTasks()
 
+    suspend fun getTaskById(id: Long): TaskEntity? = withContext(Dispatchers.IO) {
+        dao.getTaskById(id)
+    }
+
+    suspend fun getPendingReminderTasks(currentTimeMillis: Long): List<TaskEntity> = withContext(Dispatchers.IO) {
+        dao.getPendingReminderTasks(currentTimeMillis)
+    }
+
     suspend fun insertTask(task: TaskEntity): Long = withContext(Dispatchers.IO) {
         dao.insertTask(task)
     }
@@ -75,6 +83,9 @@ class WinterArcRepository(private val dao: WinterArcDao) {
             obj.put("isTop5", task.isTop5)
             obj.put("top5Index", task.top5Index)
             obj.put("scheduledTime", task.scheduledTime)
+            if (task.scheduledTimeMillis != null) {
+                obj.put("scheduledTimeMillis", task.scheduledTimeMillis)
+            }
             obj.put("createdAt", task.createdAt)
             tasksArray.put(obj)
         }
@@ -153,6 +164,7 @@ class WinterArcRepository(private val dao: WinterArcDao) {
                             isTop5 = obj.optBoolean("isTop5", false),
                             top5Index = obj.optInt("top5Index", -1),
                             scheduledTime = obj.optString("scheduledTime", ""),
+                            scheduledTimeMillis = if (obj.has("scheduledTimeMillis") && !obj.isNull("scheduledTimeMillis")) obj.optLong("scheduledTimeMillis") else null,
                             createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                         )
                     )

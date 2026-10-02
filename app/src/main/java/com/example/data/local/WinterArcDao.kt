@@ -21,6 +21,12 @@ interface WinterArcDao {
     @Query("SELECT * FROM tasks ORDER BY createdAt ASC")
     suspend fun getAllTasksDirect(): List<TaskEntity>
 
+    @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
+    suspend fun getTaskById(id: Long): TaskEntity?
+
+    @Query("SELECT * FROM tasks WHERE scheduledTimeMillis IS NOT NULL AND scheduledTimeMillis > :currentTimeMillis AND isCompleted = 0 ORDER BY scheduledTimeMillis ASC")
+    suspend fun getPendingReminderTasks(currentTimeMillis: Long): List<TaskEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: TaskEntity): Long
 

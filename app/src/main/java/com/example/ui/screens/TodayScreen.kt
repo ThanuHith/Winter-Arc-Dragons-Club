@@ -346,7 +346,7 @@ fun TodayScreen(
                         selectedTop5SlotIndex = slotIdx
                         showPickTop5Dialog = true
                     },
-                    onToggleTask = { viewModel.toggleTask(it) },
+                    onToggleTask = { viewModel.toggleTask(it, context) },
                     onRemoveFromTop5 = { viewModel.removeFromTop5(it) }
                 )
             }
@@ -367,9 +367,9 @@ fun TodayScreen(
                 RoutineSectionCard(
                     slot = TimeSlot.MORNING,
                     tasks = uiState.morningTasks,
-                    onToggleTask = { viewModel.toggleTask(it) },
+                    onToggleTask = { viewModel.toggleTask(it, context) },
                     onToggleTop5 = { viewModel.toggleTop5(it) },
-                    onDeleteTask = { viewModel.deleteTask(it) },
+                    onDeleteTask = { viewModel.deleteTask(it, context) },
                     onAddTaskInSlot = { slot ->
                         dialogInitialSlot = slot
                         dialogInitialIsTop5 = false
@@ -384,9 +384,9 @@ fun TodayScreen(
                 RoutineSectionCard(
                     slot = TimeSlot.AFTERNOON,
                     tasks = uiState.afternoonTasks,
-                    onToggleTask = { viewModel.toggleTask(it) },
+                    onToggleTask = { viewModel.toggleTask(it, context) },
                     onToggleTop5 = { viewModel.toggleTop5(it) },
-                    onDeleteTask = { viewModel.deleteTask(it) },
+                    onDeleteTask = { viewModel.deleteTask(it, context) },
                     onAddTaskInSlot = { slot ->
                         dialogInitialSlot = slot
                         dialogInitialIsTop5 = false
@@ -401,9 +401,9 @@ fun TodayScreen(
                 RoutineSectionCard(
                     slot = TimeSlot.EVENING,
                     tasks = uiState.eveningTasks,
-                    onToggleTask = { viewModel.toggleTask(it) },
+                    onToggleTask = { viewModel.toggleTask(it, context) },
                     onToggleTop5 = { viewModel.toggleTop5(it) },
-                    onDeleteTask = { viewModel.deleteTask(it) },
+                    onDeleteTask = { viewModel.deleteTask(it, context) },
                     onAddTaskInSlot = { slot ->
                         dialogInitialSlot = slot
                         dialogInitialIsTop5 = false
@@ -418,9 +418,9 @@ fun TodayScreen(
                 RoutineSectionCard(
                     slot = TimeSlot.NIGHT,
                     tasks = uiState.nightTasks,
-                    onToggleTask = { viewModel.toggleTask(it) },
+                    onToggleTask = { viewModel.toggleTask(it, context) },
                     onToggleTop5 = { viewModel.toggleTop5(it) },
-                    onDeleteTask = { viewModel.deleteTask(it) },
+                    onDeleteTask = { viewModel.deleteTask(it, context) },
                     onAddTaskInSlot = { slot ->
                         dialogInitialSlot = slot
                         dialogInitialIsTop5 = false
@@ -473,9 +473,18 @@ fun TodayScreen(
             initialSlot = dialogInitialSlot,
             initialIsTop5 = dialogInitialIsTop5,
             initialTop5SlotIndex = dialogTop5SlotIndex,
+            selectedDate = uiState.selectedDate,
             onDismiss = { showAddTaskDialog = false },
-            onConfirm = { title, slot, isTop5, slotIdx, scheduledTime ->
-                viewModel.addTask(title, slot, isTop5, slotIdx, scheduledTime)
+            onConfirm = { title, slot, isTop5, slotIdx, scheduledTime, scheduledTimeMillis ->
+                viewModel.addTask(
+                    title = title,
+                    slot = slot,
+                    isTop5 = isTop5,
+                    top5Index = slotIdx,
+                    scheduledTime = scheduledTime,
+                    scheduledTimeMillis = scheduledTimeMillis,
+                    context = context
+                )
                 showAddTaskDialog = false
             }
         )

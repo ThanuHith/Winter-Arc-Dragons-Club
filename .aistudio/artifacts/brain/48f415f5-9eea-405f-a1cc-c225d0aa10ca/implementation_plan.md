@@ -1,52 +1,37 @@
-# Unique Urban Mythical Beast Graffiti Panel Artworks - Implementation Plan
+# Implementation Plan: Duolingo-Style Marimba Chime & Compact Audio Button UI
 
-Generate distinct, tailored graffiti artworks featuring urban mythical beasts (cyber dragons and panthers) customized for each routine time slot and priority card, and apply them directly to panel backdrops while preserving 100% text readability.
-
----
-
-## User Selections & Direction
-- **Visual Theme**: Urban mythical beasts (cyber dragons, prowling panthers, glowing eyes, aerosol neon spray, dark street concrete textures).
-- **Variation Strategy**: **Unique art tailored to each routine time slot** and priority card.
-- **Backdrop Legibility**: Kept subtle and dark via existing deep obsidian scrims so text, checkboxes, and buttons remain crisp and unobstructed.
+Address the vertical text wrapping glitch shown in user screenshots and replace the alert audio with a pleasant, soft buoyant marimba bounce chime inspired by Duolingo.
 
 ---
 
-## Proposed Artwork Breakdown
-
-| Panel / Component | Beast Subject & Atmosphere | Color Palette |
-| :--- | :--- | :--- |
-| **Morning Routine** | Rising Dawn Cyber Dragon emerging through sunrise aerosol mist on a gritty concrete alley | Gold, Sunrise Amber, Fiery Orange & Charcoal |
-| **Afternoon Routine** | Prowling Cyber Panther leaping across brick mural with electric neon claw tags | Electric Cyan, Hot Magenta & Concrete Grey |
-| **Evening Routine** | Coiled Shadow Cyber Dragon breathing violet neon mist on dark brickwork | Neon Violet, Deep Purple, Electric Pink |
-| **Night Routine** | Sleek Obsidian Cyber Panther resting with glowing cyan eyes under neon moonlight spray | Midnight Blue, Bioluminescent Cyan & Onyx |
-| **Top 5 Priority Board** | Dual Mythical Beasts (Dragon & Panther standoff in high-stakes graffiti arena) | Electric Gold, Hot Pink, Cyan spray flares |
-| **Daily Progress Card** | Unleashed Cyber Dragon roaring neon emerald green flames | Toxic Green, Lime, Emerald & Deep Obsidian |
+### User Review Required
+> [!IMPORTANT]
+> - **Sound Style**: Soft buoyant marimba bounce chime with wooden percussive mallet attack, warm fundamental body, and a cheerful rising progression (reminiscent of Duolingo's delightful completion feedback).
+> - **UI Redesign**: Eliminate awkward vertical text clipping (`Te / st` and `Pl / ay / in / g`) by replacing the inline text button with an ergonomic, compact circular audio button (`▶` / `■`) alongside single-line non-wrapping labels.
 
 ---
 
-## Technical Execution Steps
+### Proposed Changes
 
-### 1. Asset Generation (`generate_image`)
-Generate 5 dedicated, high-resolution 16:9 urban graffiti assets:
-- `img_graffiti_morning_dragon`: Sunrise golden aerosol dragon mural.
-- `img_graffiti_afternoon_panther`: Prowling electric cyan & magenta urban panther.
-- `img_graffiti_evening_dragon`: Coiled shadow dragon with violet spray mist.
-- `img_graffiti_night_panther`: Obsidian panther with glowing cyan eyes in midnight spray.
-- `img_graffiti_top5_beasts`: Dragon & panther clash graffiti mural for the Top 5 priority board.
-- `img_graffiti_progress_dragon`: Emerald flame dragon for the progress completion card.
+#### 1. Audio Synthesis (`res/raw/dragon_chime.mp3`)
+- Generate an authentic, studio-quality soft buoyant marimba chime:
+  - Model wooden bar physical acoustics: warm fundamental frequencies (e.g. C5 ~523Hz, E5 ~659Hz, G5 ~784Hz, C6 ~1046Hz in quick buoyant arpeggio).
+  - Soft mallet attack ramp (3ms) with natural woody resonance decay.
+  - Convert to 44.1kHz MP3 using `ffmpeg` and place in `app/src/main/res/raw/dragon_chime.mp3`.
+  - Ensure compatibility with both `MediaPlayer` in `SoundPreviewHelper` and Android's `NotificationChannel`.
 
-### 2. Panel Background Assignment
-- **`TodayScreen.kt`**:
-  - Connect `img_graffiti_progress_dragon` to the Daily Completion card.
-- **`Top5Card.kt`**:
-  - Connect `img_graffiti_top5_beasts` to the My Top 5 Priority Board.
-- **`RoutineSectionCard.kt`**:
-  - Map `TimeSlot.MORNING` -> `img_graffiti_morning_dragon`
-  - Map `TimeSlot.AFTERNOON` -> `img_graffiti_afternoon_panther`
-  - Map `TimeSlot.EVENING` -> `img_graffiti_evening_dragon`
-  - Map `TimeSlot.NIGHT` -> `img_graffiti_night_panther`
+#### 2. Sound Preview UI Redesign (`AddTaskDialog.kt`)
+- Resolve the layout squeeze identified in the user screenshots:
+  - Structure the preview item as a clean horizontal bar where the left container takes `Modifier.weight(1f)` with strictly bounded single-line text:
+    - Title: `"Notification Chime"` (FontWeight: SemiBold, 13sp)
+    - Subtitle: `"Soft marimba bounce preview"` (TextMuted, 11sp, single line with ellipsis)
+  - Replace the text-based right widget with a **Compact Circular Audio Button**:
+    - 36dp x 36dp circular surface with 48dp minimum interactive touch target.
+    - Icon toggle: `Icons.Default.PlayArrow` when idle, `Icons.Default.Stop` when playing.
+    - Subtle pulsing or bright emerald border glow while playing.
+    - Prevents any vertical text wrapping or overlapping regardless of device font scaling.
 
-### 3. Verification & Testing
-- Compile app via `compile_applet`.
-- Execute Robolectric/JVM tests via `gradle :app:testDebugUnitTest`.
-- Ensure all text, checkboxes, icons, and times remain clearly legible over each unique backdrop.
+#### 3. Verification & Testing
+- Compile applet with `compile_applet`.
+- Execute Robolectric/JVM unit tests with `gradle :app:testDebugUnitTest`.
+- Validate that the custom MP3 plays smoothly and preview stops cleanly on dialog dismissal.

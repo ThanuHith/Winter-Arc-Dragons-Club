@@ -2,6 +2,8 @@ package com.example.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.Calendar
+import java.util.Locale
 
 enum class TimeSlot(val displayName: String, val icon: String) {
     MORNING("Morning", "🌅"),
@@ -27,9 +29,22 @@ data class TaskEntity(
     val isTop5: Boolean = false,
     val top5Index: Int = -1, // 0..4
     val scheduledTime: String = "", // "HH:mm" 24h format (e.g. "07:30", "18:00")
+    val scheduledTimeMillis: Long? = null, // Milliseconds epoch for exact reminder alarm
     val createdAt: Long = System.currentTimeMillis()
 ) {
     fun getFormattedTime(): String {
+        if (scheduledTimeMillis != null) {
+            val cal = Calendar.getInstance().apply { timeInMillis = scheduledTimeMillis }
+            val hour = cal.get(Calendar.HOUR_OF_DAY)
+            val minute = cal.get(Calendar.MINUTE)
+            val amPm = if (hour >= 12) "PM" else "AM"
+            val displayHour = when {
+                hour == 0 -> 12
+                hour > 12 -> hour - 12
+                else -> hour
+            }
+            return String.format(Locale.getDefault(), "%d:%02d %s", displayHour, minute, amPm)
+        }
         if (scheduledTime.isBlank()) return ""
         return try {
             val parts = scheduledTime.split(":")
@@ -41,7 +56,7 @@ data class TaskEntity(
                 hour > 12 -> hour - 12
                 else -> hour
             }
-            String.format("%d:%02d %s", displayHour, minute, amPm)
+            String.format(Locale.getDefault(), "%d:%02d %s", displayHour, minute, amPm)
         } catch (e: Exception) {
             scheduledTime
         }

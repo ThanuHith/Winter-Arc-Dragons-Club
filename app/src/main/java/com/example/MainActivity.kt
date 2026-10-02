@@ -41,6 +41,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        com.example.notification.TaskNotificationHelper.createNotificationChannel(applicationContext)
+
+        if (intent?.hasExtra("EXTRA_TASK_ID") == true) {
+            viewModel.selectTab(ArcTab.TODAY)
+        }
 
         setContent {
             WinterArcTheme {

@@ -12,7 +12,7 @@ import androidx.room.RoomDatabase
         WeeklyReviewEntity::class,
         ArcStrategyEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class WinterArcDatabase : RoomDatabase() {

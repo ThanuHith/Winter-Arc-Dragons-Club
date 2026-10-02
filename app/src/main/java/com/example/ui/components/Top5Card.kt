@@ -230,18 +230,27 @@ private fun Top5AssignedSlot(
                 )
                 val timeFormatted = task.getFormattedTime()
                 if (timeFormatted.isNotBlank()) {
+                    val hasAlarm = task.scheduledTimeMillis != null
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(
                                 if (task.isCompleted) Color(0x15FFFFFF)
+                                else if (hasAlarm) DragonGreen.copy(alpha = 0.2f)
                                 else CyberCyan.copy(alpha = 0.15f)
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (task.isCompleted) Color.Transparent
+                                else if (hasAlarm) DragonGreen.copy(alpha = 0.4f)
+                                else Color.Transparent,
+                                shape = RoundedCornerShape(4.dp)
                             )
                             .padding(horizontal = 5.dp, vertical = 1.dp)
                     ) {
                         Text(
-                            text = "⏰ $timeFormatted",
-                            color = if (task.isCompleted) TextMuted else CyberCyan,
+                            text = if (hasAlarm) "🔔 $timeFormatted" else "⏰ $timeFormatted",
+                            color = if (task.isCompleted) TextMuted else if (hasAlarm) DragonGreen else CyberCyan,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.SemiBold
                         )

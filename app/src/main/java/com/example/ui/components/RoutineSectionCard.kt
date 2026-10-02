@@ -240,19 +240,31 @@ private fun TaskItemRow(
             val timeFormatted = task.getFormattedTime()
             if (timeFormatted.isNotBlank()) {
                 Spacer(modifier = Modifier.height(2.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    val hasAlarm = task.scheduledTimeMillis != null
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .background(
                                 if (task.isCompleted) Color(0x15FFFFFF)
+                                else if (hasAlarm) DragonGreen.copy(alpha = 0.2f)
                                 else CyberCyan.copy(alpha = 0.15f)
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (task.isCompleted) Color.Transparent
+                                else if (hasAlarm) DragonGreen.copy(alpha = 0.4f)
+                                else Color.Transparent,
+                                shape = RoundedCornerShape(6.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "⏰ $timeFormatted",
-                            color = if (task.isCompleted) TextMuted else CyberCyan,
+                            text = if (hasAlarm) "🔔 $timeFormatted" else "⏰ $timeFormatted",
+                            color = if (task.isCompleted) TextMuted else if (hasAlarm) DragonGreen else CyberCyan,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.SemiBold
                         )
