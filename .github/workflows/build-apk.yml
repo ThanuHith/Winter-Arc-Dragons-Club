@@ -30,13 +30,17 @@ jobs:
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug -Djava.awt.headless=true
+        run: gradle assembleDebug -Djava.awt.headless=true
 
-      - name: Find and Rename APK
+      - name: Find and Prepare APK
         run: |
-          APK_PATH=$(find app/build/outputs/apk/ -name "*.apk" | head -n 1)
-          echo "Found APK at: $APK_PATH"
-          cp "$APK_PATH" Winter-Arc.apk
+          APK_FILE=$(find app/build/outputs/apk/ -name "*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "Error: No APK file generated!"
+            exit 1
+          fi
+          echo "Found APK at: $APK_FILE"
+          cp "$APK_FILE" Winter-Arc.apk
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
