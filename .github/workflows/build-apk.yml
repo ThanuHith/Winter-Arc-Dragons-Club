@@ -3,9 +3,6 @@ name: Build and Publish Android APK
 on:
   release:
     types: [published]
-  push:
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
